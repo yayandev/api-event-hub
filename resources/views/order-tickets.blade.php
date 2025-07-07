@@ -532,7 +532,7 @@
                     <div class="ticket-info-item">
                         <div class="ticket-info-label">Kategori</div>
                         <div class="ticket-info-value">
-                            {{ $order->event->category->name }}
+                            {{ $tickets->first()->ticketType->name }}
                         </div>
                     </div>
 
