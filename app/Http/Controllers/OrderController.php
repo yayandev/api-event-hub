@@ -174,4 +174,41 @@ class OrderController extends Controller
             ->with(['items.ticketType', 'user', 'event'])
             ->paginate(10);
     }
+
+    public function tickets(Request $request, $order_number)
+    {
+        $order = Order::where('order_number', $order_number)->first();
+
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found.', 'statusCode' => 404], 404);
+        }
+
+        if ($order->status != 'paid') {
+            return response()->json(['message' => 'Order not found.', 'statusCode' => 404], 404);
+        }
+
+        $items = $order->items()->get();
+        $tickets = $order->tickets()->get()->merge(collect($items)->flatMap(function ($item) use ($order) {
+            $existingTickets = $order->tickets()->where('ticket_type_id', $item->ticket_type_id)->get();
+            $remainingQuantity = $item->quantity - $existingTickets->count();
+
+            if ($remainingQuantity > 0) {
+                return collect(range(0, $remainingQuantity - 1))->map(function () use ($order, $item) {
+                    return $order->generateTicket($item->ticket_type_id);
+                });
+            }
+
+            return $existingTickets;
+        }));
+
+        // return response()->json([
+        //     'tickets' => $tickets,
+        //     'order' => $order,
+        //     'statusCode' => 200,
+        //     'message' => 'Tickets retrieved successfully.',
+        // ]);
+
+        return view('order-tickets', compact('tickets', 'order'));
+    }
 }

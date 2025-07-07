@@ -31,21 +31,19 @@ class TicketController extends Controller
 
         $items = $order->items()->get();
 
-        $tickets = [];
 
-        foreach ($items as $item) {
+        $tickets = $order->tickets()->get()->merge(collect($items)->flatMap(function ($item) use ($order) {
             $existingTickets = $order->tickets()->where('ticket_type_id', $item->ticket_type_id)->get();
             $remainingQuantity = $item->quantity - $existingTickets->count();
 
             if ($remainingQuantity > 0) {
-                for ($i = 0; $i < $remainingQuantity; $i++) {
-                    $ticket = $order->generateTicket($item->ticket_type_id);
-                    array_push($tickets, $ticket);
-                }
-            } else {
-                array_push($tickets, $existingTickets);
+                return collect(range(0, $remainingQuantity - 1))->map(function () use ($order, $item) {
+                    return $order->generateTicket($item->ticket_type_id);
+                });
             }
-        }
+
+            return $existingTickets;
+        }));
 
         return response()->json([
             'data' => $tickets,

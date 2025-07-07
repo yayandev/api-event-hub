@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Midtrans\Transaction;
 use App\Models\Order;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendEmail;
 
 class MidtransController extends Controller
 {
@@ -35,15 +37,33 @@ class MidtransController extends Controller
                             $order->update(['status' => 'pending']);
                             $order->payments()->update(['status' => 'pending']);
                         } else {
-                            $order->update(['status' => 'paid']);
+                            $order->update(['status' => 'paid', 'paid_at' => now(), 'payment_method' => $request->payment_type ?? null]);
                             $order->payments()->update(['status' => 'paid']);
+                            //update ticket type reserved quantity and sold quantity
+                            foreach ($order->items as $item) {
+                                $ticketType = $item->ticketType;
+                                $ticketType->reserved_quantity -= $item->quantity;
+                                $ticketType->sold_quantity += $item->quantity;
+                                $ticketType->save();
+                            }
+
+                            $sendMail = Mail::to($order->user->email)->send(new SendEmail($order));
                         }
                     }
                     break;
 
                 case 'settlement':
-                    $order->update(['status' => 'paid', 'paid_at' => now()]);
+                    $order->update(['status' => 'paid', 'paid_at' => now(), 'payment_method' => $request->payment_type ?? null]);
                     $order->payments()->update(['status' => 'paid']);
+                    //update ticket type reserved quantity and sold quantity
+                    foreach ($order->items as $item) {
+                        $ticketType = $item->ticketType;
+                        $ticketType->reserved_quantity -= $item->quantity;
+                        $ticketType->sold_quantity += $item->quantity;
+                        $ticketType->save();
+                    }
+
+                    $sendMail = Mail::to($order->user->email)->send(new SendEmail($order));
                     break;
 
                 case 'pending':
@@ -87,5 +107,20 @@ class MidtransController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+
+    public function sendEmailInvoice(Request $request, $id)
+    {
+        $order = Order::with(['items.ticketType', 'event', 'user', 'payments'])->findOrFail($id);
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found'], 404);
+        }
+
+
+        $sendMail = Mail::to($order->user->email)->send(new SendEmail($order));
+
+        return $sendMail;
     }
 }
