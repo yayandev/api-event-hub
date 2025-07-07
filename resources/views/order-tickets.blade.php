@@ -434,12 +434,17 @@
         }
 
         @media (max-width: 600px) {
-            .content {
+
+            .ticket-main {
                 padding: 20px;
             }
 
+            .content {
+                padding: 10px;
+            }
+
             .invoice-container {
-                padding: 20px;
+                padding: 10px;
             }
 
             .invoice-details {

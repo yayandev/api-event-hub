@@ -173,10 +173,10 @@
 
             <!-- Action Buttons -->
             <div class="space-y-3 animate-slide-up">
-                <button
+                <a href="{{ env('APP_URL') }}/order-tikets/{{ $order->order_number }}"
                     class="w-full bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200">
                     Download E-Ticket
-                </button>
+                </a>
             </div>
         </div>
     </div>
