@@ -360,6 +360,7 @@
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
         .qr-code {
