@@ -30,6 +30,15 @@ class Event extends Model
         );
     }
 
+    public function gallery(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => collect(json_decode($value))
+                ->map(fn($image) => asset('storage/' . $image))
+                ->toArray(),
+        );
+    }
+
     public function ticketTypes()
     {
         return $this->hasMany(TicketType::class);
