@@ -36,6 +36,10 @@ class EventController extends Controller
 
         $events = $events->paginate(10);
 
+        foreach ($events as $event) {
+            $event->ticket_sold = $event->ticketTypes()->sum('sold_quantity');
+        }
+
         return response()->json([
             'data' => $events->items(),
             'meta' => [
@@ -75,6 +79,10 @@ class EventController extends Controller
 
         $events = $events->paginate(10);
 
+        foreach ($events as $event) {
+            $event->ticket_sold = $event->ticketTypes()->sum('sold_quantity');
+        }
+
         return response()->json(
             [
                 'data' => $events->items(),
@@ -98,6 +106,20 @@ class EventController extends Controller
     public function show($slug)
     {
         $event = Event::with('organizer', 'category', 'ticketTypes')->where('slug', $slug)->first();
+
+        if (!$event) {
+            return response()->json(
+                [
+                    'message' => 'Event not found',
+                    'statusCode' => 404,
+                ],
+                404,
+                [],
+                JSON_UNESCAPED_SLASHES
+            )->setStatusCode(404, 'Not Found');
+        }
+
+        $event->ticket_sold = $event->ticketTypes()->sum('sold_quantity');
 
         return response()->json(
             [
