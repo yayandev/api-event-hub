@@ -55,6 +55,8 @@ class EventController extends Controller
     {
         $events = Event::with('organizer', 'category');
 
+        $events->where('status', 'published');
+
         if ($request->has('title')) {
             $events->where('title', 'like', '%' . $request->input('title') . '%');
         }
