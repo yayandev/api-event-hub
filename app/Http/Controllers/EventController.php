@@ -434,18 +434,30 @@ class EventController extends Controller
         try {
             // Delete main image
             if ($event->image) {
+                // $event->image should already be the relative path
                 Storage::disk('public')->delete($event->image);
             }
 
             // Delete gallery images
-            if ($event->gallery) {
-                $galleryImages = json_decode($event->gallery, true);
-                foreach ($galleryImages as $image) {
-                    Storage::disk('public')->delete($image);
+            // Get the raw JSON string from the database, bypassing the accessor
+            $rawGallery = $event->getRawOriginal('gallery');
+
+            if ($rawGallery) {
+                // Decode the raw JSON string into an array of relative paths
+                $galleryImages = json_decode($rawGallery, true);
+
+                // Ensure the decoded result is actually an array before looping
+                if (is_array($galleryImages)) {
+                    foreach ($galleryImages as $image) {
+                        // Ensure the image path is not null or empty before attempting deletion
+                        if ($image) {
+                            Storage::disk('public')->delete($image);
+                        }
+                    }
                 }
             }
 
-            $event->delete();
+            $event->delete(); // Delete the event record itself
 
             return response()->json([
                 'success' => true,
