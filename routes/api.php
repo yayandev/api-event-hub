@@ -108,7 +108,7 @@ Route::get('/pub/categories/{id}', [CategoryController::class, 'show'])
 Route::get('/pub/events', [EventController::class, 'publicIndex'])
     ->name('pub.events.index');
 
-Route::get('/pub/events/{id}', [EventController::class, 'show'])
+Route::get('/pub/events/{slug}', [EventController::class, 'show'])
     ->name('pub.events.show');
 
 //webhook midtrans

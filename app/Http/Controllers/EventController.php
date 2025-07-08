@@ -93,9 +93,9 @@ class EventController extends Controller
         )->setStatusCode(200, 'OK');
     }
 
-    public function show($id)
+    public function show($slug)
     {
-        $event = Event::with('category', 'organizer', 'ticketTypes')->findOrFail($id);
+        $event = Event::with('organizer', 'category')->where('slug', $slug)->first();
 
         return response()->json(
             [
