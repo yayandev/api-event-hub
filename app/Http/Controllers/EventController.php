@@ -260,9 +260,9 @@ class EventController extends Controller
             'description' => 'sometimes|string',
             'short_description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'gallery' => 'nullable|array',
+            'gallery' => 'nullable|array', // Ini akan menjadi array dari UploadedFile objects baru
             'gallery.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-            'remove_gallery_images' => 'nullable|array',
+            'remove_gallery_images' => 'nullable|array', // Ini akan menjadi array dari URL string untuk dihapus
             'remove_gallery_images.*' => 'string',
             'location' => 'sometimes|string|max:255',
             'venue' => 'nullable|string|max:255',
@@ -276,7 +276,7 @@ class EventController extends Controller
             'is_free' => 'boolean',
             'min_price' => 'nullable|numeric|min:0',
             'max_price' => 'nullable|numeric|min:0|gte:min_price',
-            'tags' => 'nullable|array',
+            'tags' => 'nullable|array', // Ini akan menjadi array dari string tags
             'tags.*' => 'string|max:50',
             'terms_and_conditions' => 'nullable|string',
             'is_featured' => 'boolean',
@@ -332,45 +332,63 @@ class EventController extends Controller
             }
 
             // Handle gallery images
-            $currentGallery = $event->gallery ? json_decode($event->gallery, true) : [];
+            // Karena ada accessor di model, $event->gallery sudah berupa array URL lengkap.
+            // Kita perlu mengonversinya kembali ke path relatif untuk perbandingan dan penyimpanan.
+            $currentRelativeGalleryPaths = [];
+            if (!empty($event->getRawOriginal('gallery'))) { // Ambil nilai asli dari DB
+                $decodedGallery = json_decode($event->getRawOriginal('gallery'), true);
+                if (is_array($decodedGallery)) {
+                    $currentRelativeGalleryPaths = array_filter($decodedGallery);
+                }
+            }
+
 
             // Remove specified gallery images
-            if ($request->has('remove_gallery_images')) {
-                foreach ($request->remove_gallery_images as $imageToRemove) {
-                    if (($key = array_search($imageToRemove, $currentGallery)) !== false) {
-                        Storage::disk('public')->delete($imageToRemove);
-                        unset($currentGallery[$key]);
+            if ($request->has('remove_gallery_images') && is_array($request->remove_gallery_images)) {
+                foreach ($request->remove_gallery_images as $imageToRemoveUrl) {
+                    // Konversi URL lengkap dari frontend kembali ke path relatif untuk perbandingan
+                    $relativePathToRemove = Str::after($imageToRemoveUrl, asset('storage/'));
+
+                    if (($key = array_search($relativePathToRemove, $currentRelativeGalleryPaths)) !== false) {
+                        Storage::disk('public')->delete($relativePathToRemove); // Hapus file fisik
+                        unset($currentRelativeGalleryPaths[$key]); // Hapus dari array
                     }
                 }
-                $currentGallery = array_values($currentGallery); // Reindex array
+                $currentRelativeGalleryPaths = array_values($currentRelativeGalleryPaths); // Re-index array
             }
 
             // Add new gallery images
             if ($request->hasFile('gallery')) {
                 foreach ($request->file('gallery') as $file) {
-                    $currentGallery[] = $this->uploadImage($file, 'events/gallery');
+                    $currentRelativeGalleryPaths[] = $this->uploadImage($file, 'events/gallery'); // Upload dan tambahkan path relatif
                 }
             }
 
-            $eventData['gallery'] = !empty($currentGallery) ? json_encode($currentGallery) : null;
+            // Encode kembali array path relatif menjadi string JSON sebelum disimpan
+            $eventData['gallery'] = !empty($currentRelativeGalleryPaths) ? json_encode($currentRelativeGalleryPaths) : null;
 
             // Handle tags
             if ($request->has('tags')) {
+                // $request->tags sudah berupa array dari string (dari frontend tags[])
+                // Langsung encode array ini menjadi string JSON untuk disimpan
                 $eventData['tags'] = json_encode($request->tags);
             }
 
-            $event->update($eventData);
+            $event->update($eventData); // Lakukan update pada model Event
 
             return response()->json([
                 'success' => true,
                 'message' => 'Event updated successfully',
-                'data' => $event->fresh()->load(['organizer', 'category'])
+                'data' => $event->fresh()->load(['organizer', 'category']) // Muat ulang relasi jika perlu
             ], 200);
         } catch (\Exception $e) {
+            // Tangani error secara umum dan berikan detail lebih lanjut untuk debugging
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update event',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ], 500);
         }
     }
