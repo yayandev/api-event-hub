@@ -58,4 +58,11 @@ class Event extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function tags(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => explode(',', $value),
+        );
+    }
 }
