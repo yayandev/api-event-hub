@@ -59,13 +59,15 @@ Route::middleware('auth:sanctum')->group(function () {
     //admin and organizer routes
     Route::middleware('role:admin,organizer')->group(function () {
         Route::resource('events', EventController::class)
-            ->except(['create', 'edit', 'update'])
+            ->except(['create', 'edit', 'update', 'show'])
             ->names([
                 'store' => 'events.store',
                 'destroy' => 'events.destroy',
                 'index' => 'events.index',
-                'show' => 'events.show',
             ]);
+
+        Route::get('/events/{slug}', [EventController::class, 'show'])
+            ->name('events.show');
 
         Route::post('/events/{event}', [EventController::class, 'update'])
             ->name('events.update');
