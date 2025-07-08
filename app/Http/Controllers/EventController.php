@@ -67,6 +67,10 @@ class EventController extends Controller
             $events->where('end', '<=', $request->input('end'));
         }
 
+        if ($request->has('category_id')) {
+            $events->where('category_id', $request->category_id);
+        }
+
         $events = $events->paginate(10);
 
         return response()->json([
