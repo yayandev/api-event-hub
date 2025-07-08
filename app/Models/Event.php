@@ -63,16 +63,16 @@ class Event extends Model
     {
         return Attribute::make(
             get: fn($value) => collect(
-                in_array(strtolower($value), [null, '', 'null'], true)
+                // Cek jika nilai kosong atau 'null' (jika disimpan sebagai string)
+                in_array(strtolower((string)$value), [null, '', 'null'], true)
                     ? []
-                    : explode(',', $value)
+                    : json_decode($value, true) // <--- UBAH INI: gunakan json_decode()
             )
-                ->map(fn($tag) => trim($tag))
-                ->filter()
-                ->values()
+                ->map(fn($tag) => trim($tag)) // Mungkin masih berguna untuk membersihkan spasi
+                ->filter() // Hapus elemen kosong setelah trim
+                ->values() // Re-index array
                 ->toArray(),
-
-            set: fn($value) => is_array($value) ? implode(',', $value) : $value
+            set: fn($value) => is_array($value) ? json_encode($value) : $value // <--- UBAH INI: pastikan selalu json_encode jika array
         );
     }
 }
