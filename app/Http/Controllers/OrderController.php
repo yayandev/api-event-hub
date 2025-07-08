@@ -169,7 +169,7 @@ class OrderController extends Controller
     private function getOrganizerOrders($user)
     {
         return Order::whereHas('event', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
+            $query->where('organizer_id', $user->id);
         })
             ->with(['items.ticketType', 'user', 'event'])
             ->paginate(10);
