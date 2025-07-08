@@ -95,7 +95,7 @@ class EventController extends Controller
 
     public function show($slug)
     {
-        $event = Event::with('organizer', 'category')->where('slug', $slug)->first();
+        $event = Event::with('organizer', 'category', 'ticketTypes')->where('slug', $slug)->first();
 
         return response()->json(
             [
