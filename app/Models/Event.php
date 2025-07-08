@@ -62,11 +62,17 @@ class Event extends Model
     public function tags(): Attribute
     {
         return Attribute::make(
-            get: fn($value) => collect(explode(',', $value ?? ''))
+            get: fn($value) => collect(
+                in_array(strtolower($value), [null, '', 'null'], true)
+                    ? []
+                    : explode(',', $value)
+            )
                 ->map(fn($tag) => trim($tag))
                 ->filter()
                 ->values()
                 ->toArray(),
+
+            set: fn($value) => is_array($value) ? implode(',', $value) : $value
         );
     }
 }
