@@ -73,30 +73,40 @@ class EventController extends Controller
 
         $events = $events->paginate(10);
 
-        return response()->json([
-            'data' => $events->items(),
-            'meta' => [
-                'total' => $events->total(),
-                'per_page' => $events->perPage(),
-                'current_page' => $events->currentPage(),
-                'last_page' => $events->lastPage(),
-                'from' => $events->firstItem(),
-                'to' => $events->lastItem(),
+        return response()->json(
+            [
+                'data' => $events->items(),
+                'meta' => [
+                    'total' => $events->total(),
+                    'per_page' => $events->perPage(),
+                    'current_page' => $events->currentPage(),
+                    'last_page' => $events->lastPage(),
+                    'from' => $events->firstItem(),
+                    'to' => $events->lastItem(),
+                ],
+                'message' => 'Public events retrieved successfully',
+                'statusCode' => 200,
             ],
-            'message' => 'Public events retrieved successfully',
-            'statusCode' => 200,
-        ])->setStatusCode(200, 'OK');
+            200,
+            [],
+            JSON_UNESCAPED_SLASHES
+        )->setStatusCode(200, 'OK');
     }
 
     public function show($id)
     {
         $event = Event::with('category', 'organizer', 'ticketTypes')->findOrFail($id);
 
-        return response()->json([
-            'data' => $event,
-            'message' => 'Event retrieved successfully',
-            'statusCode' => 200,
-        ])->setStatusCode(200, 'OK');
+        return response()->json(
+            [
+                'data' => $event,
+                'message' => 'Event retrieved successfully',
+                'statusCode' => 200,
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_SLASHES
+        )->setStatusCode(200, 'OK');
     }
 
     public function store(Request $request): JsonResponse
