@@ -140,9 +140,9 @@ class EventController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'short_description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'gallery' => 'nullable|array',
-            'gallery.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallery.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240',
             'location' => 'required|string|max:255',
             'venue' => 'nullable|string|max:255',
             'address' => 'nullable|string',
@@ -259,9 +259,9 @@ class EventController extends Controller
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'short_description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
             'gallery' => 'nullable|array', // Ini akan menjadi array dari UploadedFile objects baru
-            'gallery.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallery.*' => 'image|mimes:jpeg,png,jpg,gif|max:10240',
             'remove_gallery_images' => 'nullable|array', // Ini akan menjadi array dari URL string untuk dihapus
             'remove_gallery_images.*' => 'string',
             'location' => 'sometimes|string|max:255',
