@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\TicketType;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -159,6 +160,14 @@ class EventController extends Controller
             'tags.*' => 'string|max:50',
             'terms_and_conditions' => 'nullable|string',
             'is_featured' => 'boolean',
+            'ticket_types' => 'required|array',
+            'ticket_types.*.name' => 'required|string|max:255',
+            'ticket_types.*.description' => 'nullable|string',
+            'ticket_types.*.price' => 'required|numeric|min:0',
+            'ticket_types.*.quantity' => 'required|integer|min:0',
+            'ticket_types.*.sale_start_date' => 'required|date',
+            'ticket_types.*.sale_end_date' => 'required|date|after:sale_start_date',
+            'ticket_types.*.benefits' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -224,6 +233,13 @@ class EventController extends Controller
             }
 
             $event = Event::create($eventData);
+
+            if ($request->has('ticket_types')) {
+                foreach ($request->ticket_types as $ticketTypeData) {
+                    $ticketTypeData['event_id'] = $event->id;
+                    TicketType::create($ticketTypeData);
+                }
+            }
 
             return response()->json([
                 'success' => true,
