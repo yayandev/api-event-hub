@@ -220,10 +220,15 @@ class OrderController extends Controller
             return response()->json(['message' => 'Order not found.', 'statusCode' => 404], 404);
         }
 
-        return response()->json([
-            'order' => $order,
-            'statusCode' => 200,
-            'message' => 'Order retrieved successfully.',
-        ], 200);
+        return response()->json(
+            [
+                'order' => $order,
+                'statusCode' => 200,
+                'message' => 'Order retrieved successfully.',
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_SLASHES
+        );
     }
 }
