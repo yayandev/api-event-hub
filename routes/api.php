@@ -90,6 +90,9 @@ Route::middleware('auth:sanctum')->group(function () {
     //order index route
     Route::get('/orders', [OrderController::class, 'index']);
 
+    //order show route
+    Route::get('/orders/{order_number}', [OrderController::class, 'show']);
+
     //order cancel route
     Route::get('/orders/{order_number}/cancel', [OrderController::class, 'cancelOrder']);
 

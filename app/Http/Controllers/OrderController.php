@@ -211,4 +211,19 @@ class OrderController extends Controller
 
         return view('order-tickets', compact('tickets', 'order'));
     }
+
+    public function show(Request $request, $order_number)
+    {
+        $order = Order::with(['items.ticketType', 'event', 'user', 'payments', 'tickets'])->where('order_number', $order_number)->first();
+
+        if (!$order) {
+            return response()->json(['message' => 'Order not found.', 'statusCode' => 404], 404);
+        }
+
+        return response()->json([
+            'order' => $order,
+            'statusCode' => 200,
+            'message' => 'Order retrieved successfully.',
+        ], 200);
+    }
 }
