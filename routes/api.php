@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TicketTypeController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChangePasswordController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\LogoutController;
@@ -10,6 +12,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\TicketController;
+use App\Http\Controllers\UpdateProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserProfileController;
 use Illuminate\Http\Request;
@@ -26,6 +29,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [UserProfileController::class, 'profile'])
         ->name('profile');
+
+    Route::post('/update_profile', [UpdateProfileController::class, 'updateProfile'])
+        ->name('update_profile');
+
+    Route::post('/change_password', [ChangePasswordController::class, 'changePassword'])->name('change_password');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/logout', [LogoutController::class, 'logout'])
         ->name('logout');
