@@ -86,7 +86,7 @@ class TicketController extends Controller
             // Tiket milik customer (berdasarkan user_id pada order)
             $tickets = Ticket::whereHas('order', function ($query) use ($user) {
                 $query->where('user_id', $user->id);
-            })->with(['order', 'ticketType'])->latest()->paginate(10);
+            })->with(['order', 'order.event', 'ticketType'])->latest()->paginate(10);
 
             return response()->json([
                 'data' => $tickets,
