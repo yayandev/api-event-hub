@@ -39,6 +39,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [LogoutController::class, 'logout'])
         ->name('logout');
 
+    Route::get('/tickets', [TicketController::class, 'index']);
+    Route::get('/tickets/{identifier}', [TicketController::class, 'show']);
+
+
     //admin only routes
     Route::middleware('role:admin')->group(function () {
         Route::resource('categories', CategoryController::class)
